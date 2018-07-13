@@ -143,6 +143,46 @@ function uimods_civicrm_pageRun(&$page) {
 //  }
 }
 
+/**
+ * Implements hook_civicrm_summary().
+ *
+ * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_summary
+ */
+function uimods_civicrm_summary($contactID, &$content, &$contentPlacement = CRM_Utils_Hook::SUMMARY_BELOW) {
+  $result = civicrm_api3('Relationship', 'get', array(
+    'return' => array(
+      'end_date',
+      'contact_id_b',
+    ),
+    'contact_id_a' => $contactID,
+    'relationship_type_id' => 10,
+  ));
+  if (!empty($result['values'])) {
+    $content = '<div class="crm-summary-block crm-clear">';
+    foreach ($result['values'] as $relationship) {
+      $assignee = civicrm_api3('Contact', 'getsingle', array(
+        'id' => $relationship['contact_id_b'],
+        'return' => array('display_name'),
+      ));
+      $content .= '<div class="crm-summary-row">';
+      $content .= '<div class="crm-label">Betreut von:</div><div class="crm-content"><a href="/civicrm/contact/view?reset=1&cid=' . $assignee['id'] . '">' . $assignee['display_name'] . '</a></div>';
+      $content .= '<div class="crm-label">Ende:</div><div class="crm-content">' . $relationship ['end_date'] . '</div>';
+      $content .= '</div>';
+    }
+    $content .= '</div>';
+    $contentPlacement = CRM_Utils_Hook::SUMMARY_ABOVE;
+  }
+
+  $content .= '<div class="crm-summary-block crm-clear">';
+  $content .= '<h3>Aktuelle Beziehungen</h3>';
+  $vars = array(
+    'context' => 'current',
+    'contactId' => $contactID,
+  );
+  $content .= CRM_Core_Smarty::singleton()->fetchWith('CRM/Contact/Page/View/RelationshipSelector.tpl', $vars);
+  $content .= '</div>';
+}
+
 // --- Functions below this ship commented out. Uncomment as required. ---
 
 /**
