@@ -171,6 +171,7 @@ function uimods_civicrm_summary($contactID, &$content, &$contentPlacement = CRM_
     $vars = array(
       'context' => 'current',
       'contactId' => $contactID,
+      'columnHeaders' => CRM_Contact_BAO_Relationship::getColumnHeaders(),
     );
     $content .= CRM_Core_Smarty::singleton()->fetchWith('CRM/Contact/Page/View/RelationshipSelector.tpl', $vars);
     $content .= '</div>';
